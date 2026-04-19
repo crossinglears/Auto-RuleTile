@@ -1,0 +1,14 @@
+{
+  "name": "com.crossinglears.autoruletile",
+  "displayName": "Auto RuleTile",
+  "version": "1.0.0",
+  "unity": "6000.0",
+  "description": "Create 2D tilemap RuleTile",
+  "dependencies": {},
+
+  "author": {
+    "name": "Crossing Lears",
+    "email": "main@crossinglears.com"
+  }
+  
+}
