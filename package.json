@@ -1,7 +1,7 @@
 {
   "name": "com.crossinglears.autoruletile",
   "displayName": "Auto RuleTile",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "unity": "6000.0",
   "description": "Create 2D tilemap RuleTile",
   "dependencies": {},
