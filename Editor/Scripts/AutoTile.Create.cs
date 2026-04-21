@@ -213,12 +213,6 @@ namespace CrossingLears.Editor
             }
 
             newRuleTile.m_DefaultSprite = sprites[Full49DefaultSpriteIndex];
-
-            if (AssetDatabase.LoadAssetAtPath<Object>(assetPath) != null)
-            {
-                AssetDatabase.DeleteAsset(assetPath);
-            }
-
             AssetDatabase.CreateAsset(newRuleTile, assetPath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -364,12 +358,6 @@ namespace CrossingLears.Editor
             converter.tileSize = new Vector2Int(Mathf.RoundToInt(firstSpriteRect.width), Mathf.RoundToInt(firstSpriteRect.height));
             converter.spriteIndices = BuildConverterIndices();
             EnsureAssetFolderExists(assetPath);
-
-            if (AssetDatabase.LoadAssetAtPath<Object>(assetPath) != null)
-            {
-                AssetDatabase.DeleteAsset(assetPath);
-            }
-
             AssetDatabase.CreateAsset(converter, assetPath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
