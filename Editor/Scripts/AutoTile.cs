@@ -16,7 +16,7 @@ namespace CrossingLears.Editor
             DrawSourceModeSelector();
         }
 
-        private const string Full49TemplatePath = "Packages/com.crossinglears.autoruletile/Editor/AutoRuleTile49_default.asset";
+        private const string Full49TemplatePath = "Assets/Crossing Lears/Auto RuleTile/Editor/AutoRuleTile49_default.asset";
         private const string DefaultSpriteTemplateTexturePath = "Assets/Crossing Lears/Auto RuleTile/Editor/RoadTileset.png";
         private const int Full49RuleCount = 49;
         private const int Full49DefaultSpriteIndex = 24;
