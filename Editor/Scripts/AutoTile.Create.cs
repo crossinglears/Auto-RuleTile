@@ -53,14 +53,21 @@ namespace CrossingLears.Editor
                     break;
             }
 
-            string selectedAssetPath = EditorUtility.SaveFilePanelInProject("Create AutoTile", Path.GetFileNameWithoutExtension(assetPath), "asset", "Select where to create the autotile asset.");
-
-            if (string.IsNullOrWhiteSpace(selectedAssetPath))
+            if (tileBaseToReplace != null)
             {
-                return;
+                assetPath = AssetDatabase.GetAssetPath(tileBaseToReplace);
             }
+            else
+            {
+                string selectedAssetPath = EditorUtility.SaveFilePanelInProject("Create AutoTile", Path.GetFileNameWithoutExtension(assetPath), "asset", "Select where to create the autotile asset.");
 
-            assetPath = selectedAssetPath;
+                if (string.IsNullOrWhiteSpace(selectedAssetPath))
+                {
+                    return;
+                }
+
+                assetPath = selectedAssetPath;
+            }
 
             if (!ValidateAssetPath())
             {
@@ -266,6 +273,7 @@ namespace CrossingLears.Editor
             {
                 template = AssetDatabase.LoadAssetAtPath<RuleTile>(Full49TemplatePathFallback);
             }
+
             if (template == null)
             {
                 EditorUtility.DisplayDialog("AutoTile", "Missing the 49 tile RuleTile template asset.", "OK");
@@ -289,6 +297,11 @@ namespace CrossingLears.Editor
 
             EnsureAssetFolderExists(assetPath);
 
+            if (AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath) != null)
+            {
+                AssetDatabase.DeleteAsset(assetPath);
+            }
+
             RuleTile newRuleTile = ScriptableObject.CreateInstance<RuleTile>();
             EditorUtility.CopySerialized(template, newRuleTile);
 
@@ -301,6 +314,7 @@ namespace CrossingLears.Editor
             AssetDatabase.CreateAsset(newRuleTile, assetPath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+            tileBaseToReplace = newRuleTile;
             EditorGUIUtility.PingObject(newRuleTile);
             Selection.activeObject = newRuleTile;
         }
@@ -363,6 +377,11 @@ namespace CrossingLears.Editor
             if (selectedTilemapConverter == null)
             {
                 EditorUtility.DisplayDialog("AutoTile", "Assign a TextureTilemapConverter first.", "OK");
+                return false;
+            }
+
+            if (!EnsureTextureIsSliced7x7(AssetDatabase.GetAssetPath(converterTileMapTexture)))
+            {
                 return false;
             }
 

@@ -28,6 +28,7 @@ namespace CrossingLears.Editor
         private const int Full49DefaultSpriteIndex = 24;
         private const int GridSize = 7;
         private const float SpriteFieldSize = 48f;
+        private const float ReplaceTileFieldWidth = 140f;
         private const string DefaultAssetPath = "Assets/New Auto Rule Tile.asset";
 
         private AutoTileSourceMode selectedSourceMode = AutoTileSourceMode.FromTexture;
@@ -41,6 +42,7 @@ namespace CrossingLears.Editor
         private Texture2D converterTileMapTexture;
         private TextureTilemapConverter selectedTilemapConverter;
         private TextureTilemapConverter editConverter;
+        private TileBase tileBaseToReplace;
         private string assetPath = DefaultAssetPath;
         private readonly Sprite[] spriteGrid = new Sprite[Full49RuleCount];
         private readonly Sprite[] converterSpriteGrid = new Sprite[Full49RuleCount];

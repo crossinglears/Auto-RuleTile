@@ -384,6 +384,11 @@ namespace CrossingLears.Editor
                 return null;
             }
 
+            if (!EnsureTextureIsSliced7x7(sourceTexturePath))
+            {
+                return null;
+            }
+
             Sprite[] sourceSprites = LoadSortedSprites(sourceTexturePath);
             Texture2D outputTexture = new Texture2D(converter.tileSize.x * GridSize, converter.tileSize.y * GridSize, TextureFormat.RGBA32, false);
             outputTexture.filterMode = sourceTexture.filterMode;

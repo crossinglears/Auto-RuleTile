@@ -201,10 +201,15 @@ namespace CrossingLears.Editor
 
             using (new EditorGUI.DisabledScope(selectedPattern != AutoTilePattern.Full49))
             {
+                EditorGUILayout.BeginHorizontal();
+
                 if (GUILayout.Button("Make AutoTile"))
                 {
                     CreateAutoTile();
                 }
+
+                tileBaseToReplace = (TileBase)EditorGUILayout.ObjectField(tileBaseToReplace, typeof(TileBase), false, GUILayout.Width(ReplaceTileFieldWidth));
+                EditorGUILayout.EndHorizontal();
             }
         }
 
@@ -253,10 +258,15 @@ namespace CrossingLears.Editor
 
             using (new EditorGUI.DisabledScope(selectedPattern != AutoTilePattern.Full49 || !hasValidTemplateTexture))
             {
+                EditorGUILayout.BeginHorizontal();
+
                 if (GUILayout.Button("Make AutoTile"))
                 {
                     CreateAutoTile();
                 }
+
+                tileBaseToReplace = (TileBase)EditorGUILayout.ObjectField(tileBaseToReplace, typeof(TileBase), false, GUILayout.Width(ReplaceTileFieldWidth));
+                EditorGUILayout.EndHorizontal();
             }
         }
 
