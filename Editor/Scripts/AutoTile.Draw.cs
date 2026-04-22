@@ -1,10 +1,14 @@
+using UnityEditorInternal;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace CrossingLears.Editor
 {
     public partial class AutoTile
     {
+        private ReorderableList animationTileSourceList;
+
         public override void DrawContent()
         {
             DrawSelectedModeContent();
@@ -27,6 +31,15 @@ namespace CrossingLears.Editor
             EditorGUILayout.BeginVertical(contentStyle);
             GUILayout.Space(2f);
 
+            if (selectedTileAssetMode == AutoTileAssetMode.AnimationTile)
+            {
+                DrawAnimationTileContent();
+                EditorGUILayout.EndVertical();
+                return;
+            }
+
+            DrawSourceModeSelector();
+
             switch (selectedSourceMode)
             {
                 case AutoTileSourceMode.FromTexture:
@@ -41,6 +54,111 @@ namespace CrossingLears.Editor
             }
 
             EditorGUILayout.EndVertical();
+        }
+
+        private void DrawAnimationTileContent()
+        {
+            EnsureAnimationTileSourceList();
+            EditorGUILayout.LabelField("Create a single AnimationTile from TileBase assets.", EditorStyles.boldLabel);
+            EditorGUILayout.Space(4f);
+            animationTileSourceList.DoLayoutList();
+
+            if (GUILayout.Button("Make AnimationTile"))
+            {
+                CreateAutoTile();
+            }
+        }
+
+        private void EnsureAnimationTileSourceList()
+        {
+            if (animationTileSourceList != null)
+            {
+                return;
+            }
+
+            animationTileSourceList = new ReorderableList(animationTileSources, typeof(TileBase), true, true, true, true);
+            animationTileSourceList.drawHeaderCallback = DrawAnimationTileSourceListHeader;
+            animationTileSourceList.drawElementCallback = DrawAnimationTileSourceListElement;
+            animationTileSourceList.elementHeight = EditorGUIUtility.singleLineHeight + 4f;
+            animationTileSourceList.onAddCallback = AddAnimationTileSourceListElement;
+        }
+
+        private void AddAnimationTileSourceListElement(ReorderableList list)
+        {
+            animationTileSources.Add(null);
+            list.index = animationTileSources.Count - 1;
+        }
+
+        private void DrawAnimationTileSourceListHeader(Rect rect)
+        {
+            EditorGUI.LabelField(rect, "Tile Bases");
+            HandleAnimationTileSourceHeaderDrag(rect);
+        }
+
+        private void DrawAnimationTileSourceListElement(Rect rect, int index, bool isActive, bool isFocused)
+        {
+            Rect fieldRect = new Rect(rect.x, rect.y + 2f, rect.width, EditorGUIUtility.singleLineHeight);
+            animationTileSources[index] = (TileBase)EditorGUI.ObjectField(fieldRect, animationTileSources[index], typeof(TileBase), false);
+        }
+
+        private void HandleAnimationTileSourceHeaderDrag(Rect rect)
+        {
+            Event currentEvent = Event.current;
+
+            if (!rect.Contains(currentEvent.mousePosition))
+            {
+                return;
+            }
+
+            if (currentEvent.type == EventType.DragUpdated)
+            {
+                if (HasTileBaseDragReferences())
+                {
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                    currentEvent.Use();
+                }
+
+                return;
+            }
+
+            if (currentEvent.type != EventType.DragPerform)
+            {
+                return;
+            }
+
+            if (!HasTileBaseDragReferences())
+            {
+                return;
+            }
+
+            DragAndDrop.AcceptDrag();
+
+            for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
+            {
+                TileBase tileBase = DragAndDrop.objectReferences[i] as TileBase;
+
+                if (tileBase == null)
+                {
+                    continue;
+                }
+
+                animationTileSources.Add(tileBase);
+            }
+
+            currentEvent.Use();
+        }
+
+        private bool HasTileBaseDragReferences()
+        {
+            for (int i = 0; i < DragAndDrop.objectReferences.Length; i++)
+            {
+                if (DragAndDrop.objectReferences[i] is TileBase)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void DrawSourceModeButton(AutoTileSourceMode sourceMode, string label)

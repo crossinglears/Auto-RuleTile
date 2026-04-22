@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -9,6 +11,12 @@ namespace CrossingLears.Editor
     {
         private void CreateAutoTile()
         {
+            if (selectedTileAssetMode == AutoTileAssetMode.AnimationTile)
+            {
+                CreateAnimationTileAsset();
+                return;
+            }
+
             if (selectedSourceMode == AutoTileSourceMode.FromConverter && selectedConverterMode == AutoTileConverterMode.EditExistingConverter)
             {
                 if (!ValidateConverterMode())
@@ -80,6 +88,44 @@ namespace CrossingLears.Editor
             }
         }
 
+        private void CreateAnimationTileAsset()
+        {
+            if (!ValidateAnimationTileMode())
+            {
+                return;
+            }
+
+            string selectedAssetPath = EditorUtility.SaveFilePanelInProject("Create AnimationTile", Path.GetFileNameWithoutExtension(assetPath), "asset", "Select where to create the animation tile asset.");
+
+            if (string.IsNullOrWhiteSpace(selectedAssetPath))
+            {
+                return;
+            }
+
+            assetPath = selectedAssetPath;
+
+            if (!ValidateAssetPath())
+            {
+                return;
+            }
+
+            TileBase firstTileBase = animationTileSources[0];
+
+            if (firstTileBase is Tile)
+            {
+                CreateAnimatedTileFromTiles();
+                return;
+            }
+
+            if (firstTileBase is RuleTile)
+            {
+                CreateAnimatedRuleTileFromRuleTiles();
+                return;
+            }
+
+            throw new InvalidOperationException("Only Tile and RuleTile inputs are supported for AnimationTile creation.");
+        }
+
         private bool ValidateAssetPath()
         {
             if (string.IsNullOrWhiteSpace(assetPath))
@@ -97,6 +143,41 @@ namespace CrossingLears.Editor
             if (!assetPath.EndsWith(".asset"))
             {
                 assetPath += ".asset";
+            }
+
+            return true;
+        }
+
+        private bool ValidateAnimationTileMode()
+        {
+            if (animationTileSources.Count == 0)
+            {
+                EditorUtility.DisplayDialog("AutoTile", "Add at least one TileBase.", "OK");
+                return false;
+            }
+
+            TileBase firstTileBase = null;
+
+            for (int i = 0; i < animationTileSources.Count; i++)
+            {
+                TileBase tileBase = animationTileSources[i];
+
+                if (tileBase == null)
+                {
+                    EditorUtility.DisplayDialog("AutoTile", "All TileBase slots must contain a tile.", "OK");
+                    return false;
+                }
+
+                if (firstTileBase == null)
+                {
+                    firstTileBase = tileBase;
+                    continue;
+                }
+
+                if (tileBase.GetType() != firstTileBase.GetType())
+                {
+                    throw new InvalidOperationException("All TileBase inputs must be the same type.");
+                }
             }
 
             return true;
@@ -181,6 +262,10 @@ namespace CrossingLears.Editor
         {
             RuleTile template = AssetDatabase.LoadAssetAtPath<RuleTile>(Full49TemplatePath);
 
+            if (template == null)
+            {
+                template = AssetDatabase.LoadAssetAtPath<RuleTile>(Full49TemplatePathFallback);
+            }
             if (template == null)
             {
                 EditorUtility.DisplayDialog("AutoTile", "Missing the 49 tile RuleTile template asset.", "OK");
@@ -390,6 +475,70 @@ namespace CrossingLears.Editor
             AssetDatabase.Refresh();
             EditorGUIUtility.PingObject(editConverter);
             Selection.activeObject = editConverter;
+        }
+
+        private void CreateAnimatedTileFromTiles()
+        {
+            AnimatedTile animatedTile = ScriptableObject.CreateInstance<AnimatedTile>();
+            List<Sprite> animatedSprites = new List<Sprite>();
+            Tile firstTile = (Tile)animationTileSources[0];
+
+            for (int i = 0; i < animationTileSources.Count; i++)
+            {
+                Tile tile = (Tile)animationTileSources[i];
+                animatedSprites.Add(tile.sprite);
+            }
+
+            animatedTile.m_AnimatedSprites = animatedSprites.ToArray();
+            animatedTile.m_MinSpeed = 1f;
+            animatedTile.m_MaxSpeed = 1f;
+            animatedTile.m_TileColliderType = firstTile.colliderType;
+            EnsureAssetFolderExists(assetPath);
+            AssetDatabase.CreateAsset(animatedTile, assetPath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            EditorGUIUtility.PingObject(animatedTile);
+            Selection.activeObject = animatedTile;
+        }
+
+        private void CreateAnimatedRuleTileFromRuleTiles()
+        {
+            RuleTile firstRuleTile = (RuleTile)animationTileSources[0];
+            RuleTile animatedRuleTile = (RuleTile)ScriptableObject.CreateInstance(firstRuleTile.GetType());
+            EditorUtility.CopySerialized(firstRuleTile, animatedRuleTile);
+            int expectedRuleCount = firstRuleTile.m_TilingRules.Count;
+
+            for (int tileIndex = 1; tileIndex < animationTileSources.Count; tileIndex++)
+            {
+                RuleTile sourceRuleTile = (RuleTile)animationTileSources[tileIndex];
+
+                if (sourceRuleTile.m_TilingRules.Count != expectedRuleCount)
+                {
+                    throw new InvalidOperationException("All RuleTiles must have the same rule count.");
+                }
+            }
+
+            for (int ruleIndex = 0; ruleIndex < animatedRuleTile.m_TilingRules.Count; ruleIndex++)
+            {
+                Sprite[] animatedSprites = new Sprite[animationTileSources.Count];
+
+                for (int tileIndex = 0; tileIndex < animationTileSources.Count; tileIndex++)
+                {
+                    RuleTile sourceRuleTile = (RuleTile)animationTileSources[tileIndex];
+                    animatedSprites[tileIndex] = sourceRuleTile.m_TilingRules[ruleIndex].m_Sprites[0];
+                }
+
+                animatedRuleTile.m_TilingRules[ruleIndex].m_Output = RuleTile.TilingRuleOutput.OutputSprite.Animation;
+                animatedRuleTile.m_TilingRules[ruleIndex].m_Sprites = animatedSprites;
+            }
+
+            animatedRuleTile.m_DefaultSprite = firstRuleTile.m_DefaultSprite;
+            EnsureAssetFolderExists(assetPath);
+            AssetDatabase.CreateAsset(animatedRuleTile, assetPath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            EditorGUIUtility.PingObject(animatedRuleTile);
+            Selection.activeObject = animatedRuleTile;
         }
     }
 }

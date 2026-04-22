@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace CrossingLears.Editor
 {
@@ -12,11 +13,16 @@ namespace CrossingLears.Editor
     {
         public override void DrawTitle()
         {
+            string[] tileAssetModeLabels = new string[] { "RuleTile", "AnimationTile" };
+            EditorGUILayout.BeginHorizontal();
             base.DrawTitle();
-            DrawSourceModeSelector();
+            GUILayout.FlexibleSpace();
+            selectedTileAssetMode = (AutoTileAssetMode)EditorGUILayout.Popup((int)selectedTileAssetMode, tileAssetModeLabels, GUILayout.Width(120f));
+            EditorGUILayout.EndHorizontal();
         }
 
         private const string Full49TemplatePath = "Packages/com.crossinglears.autoruletile/Editor/AutoRuleTile49_default.asset";
+        private const string Full49TemplatePathFallback = "Assets/Crossing Lears/Auto RuleTile/Editor/AutoRuleTile49_default.asset";
         private const string DefaultSpriteTemplateTexturePath = "Assets/Crossing Lears/Auto RuleTile/Editor/RoadTileset.png";
         private const int Full49RuleCount = 49;
         private const int Full49DefaultSpriteIndex = 24;
@@ -25,6 +31,7 @@ namespace CrossingLears.Editor
         private const string DefaultAssetPath = "Assets/New Auto Rule Tile.asset";
 
         private AutoTileSourceMode selectedSourceMode = AutoTileSourceMode.FromTexture;
+        private AutoTileAssetMode selectedTileAssetMode = AutoTileAssetMode.RuleTile;
         private AutoTilePattern selectedPattern = AutoTilePattern.Full49;
         private AutoTileTextureWriteMode selectedTextureWriteMode = AutoTileTextureWriteMode.MakeNewTexture;
         private AutoTileConverterMode selectedConverterMode = AutoTileConverterMode.CreateConverter;
@@ -37,6 +44,7 @@ namespace CrossingLears.Editor
         private string assetPath = DefaultAssetPath;
         private readonly Sprite[] spriteGrid = new Sprite[Full49RuleCount];
         private readonly Sprite[] converterSpriteGrid = new Sprite[Full49RuleCount];
+        private readonly System.Collections.Generic.List<TileBase> animationTileSources = new System.Collections.Generic.List<TileBase>();
         private string spriteGridSourcePath;
         private string converterGridSourcePath;
         private string loadedEditConverterPath;
@@ -48,6 +56,12 @@ namespace CrossingLears.Editor
             FromTexture = 0,
             FromSprites = 1,
             FromConverter = 2
+        }
+
+        private enum AutoTileAssetMode
+        {
+            RuleTile = 0,
+            AnimationTile = 1
         }
 
         private enum AutoTilePattern
