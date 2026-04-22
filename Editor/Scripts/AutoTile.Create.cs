@@ -490,8 +490,8 @@ namespace CrossingLears.Editor
             }
 
             animatedTile.m_AnimatedSprites = animatedSprites.ToArray();
-            animatedTile.m_MinSpeed = 1f;
-            animatedTile.m_MaxSpeed = 1f;
+            animatedTile.m_MinSpeed = animationMinSpeed;
+            animatedTile.m_MaxSpeed = animationMaxSpeed;
             animatedTile.m_TileColliderType = firstTile.colliderType;
             EnsureAssetFolderExists(assetPath);
             AssetDatabase.CreateAsset(animatedTile, assetPath);
@@ -530,6 +530,8 @@ namespace CrossingLears.Editor
 
                 animatedRuleTile.m_TilingRules[ruleIndex].m_Output = RuleTile.TilingRuleOutput.OutputSprite.Animation;
                 animatedRuleTile.m_TilingRules[ruleIndex].m_Sprites = animatedSprites;
+                animatedRuleTile.m_TilingRules[ruleIndex].m_MinAnimationSpeed = animationMinSpeed;
+                animatedRuleTile.m_TilingRules[ruleIndex].m_MaxAnimationSpeed = animationMaxSpeed;
             }
 
             animatedRuleTile.m_DefaultSprite = firstRuleTile.m_DefaultSprite;

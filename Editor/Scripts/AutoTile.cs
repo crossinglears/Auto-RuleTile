@@ -45,6 +45,8 @@ namespace CrossingLears.Editor
         private readonly Sprite[] spriteGrid = new Sprite[Full49RuleCount];
         private readonly Sprite[] converterSpriteGrid = new Sprite[Full49RuleCount];
         private readonly System.Collections.Generic.List<TileBase> animationTileSources = new System.Collections.Generic.List<TileBase>();
+        private float animationMinSpeed = 1f;
+        private float animationMaxSpeed = 1f;
         private string spriteGridSourcePath;
         private string converterGridSourcePath;
         private string loadedEditConverterPath;

@@ -61,6 +61,9 @@ namespace CrossingLears.Editor
             EnsureAnimationTileSourceList();
             EditorGUILayout.LabelField("Create a single AnimationTile from TileBase assets.", EditorStyles.boldLabel);
             EditorGUILayout.Space(4f);
+            animationMinSpeed = EditorGUILayout.FloatField("Min Speed", animationMinSpeed);
+            animationMaxSpeed = EditorGUILayout.FloatField("Max Speed", animationMaxSpeed);
+            EditorGUILayout.Space(4f);
             animationTileSourceList.DoLayoutList();
 
             if (GUILayout.Button("Make AnimationTile"))
